@@ -1,0 +1,57 @@
+--design.vhd IZVRSNO RADI
+library IEEE;
+use IEEE.std_logic_1164.all;
+ENTITY dff IS
+PORT(D:IN bit;clk: IN bit;clr: IN bit; Q: OUT bit);
+END ENTITY dff;
+
+ARCHITECTURE arh_dff of dff IS
+BEGIN
+	PROCESS(clk,clr) IS
+	BEGIN
+	IF clr='1' then
+	Q <='0';
+	ELSIF clk'EVENT and clk='1' then
+	Q <= D;
+	END IF;
+	END PROCESS;
+END ARCHITECTURE arh_dff;
+_____________________________________________________________________________
+
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+ENTITY dff_tb IS
+END ENTITY dff_tb;
+ARCHITECTURE tb OF dff_tb IS
+SIGNAL clock,clear,De,Qu: bit;--direct
+BEGIN
+	uut: ENTITY work.dff(arh_dff)
+		PORT MAP(
+		D>=De,
+		clk>=clock,
+		clr>=clear,
+		Q>=Qu,         --, sa zarezom 2 greske, opet ista prica
+		);
+		stimuli: PROCESS
+		BEGIN
+			De<='1';
+			clk<='0';
+			clr<='1';
+			Qu<='0';
+			WAIT FOR 1ns;
+			
+			De<='1';
+			clk<='1';
+			clr<='0';
+			Qu<='1';
+			WAIT FOR 1ns;
+			
+			De<='0';
+			clk<='0';
+			clr<='1';
+			Qu<='1';
+			WAIT FOR 1ns;
+			
+			END PROCESS stimuli;
+		END ARCHITECTURE;
