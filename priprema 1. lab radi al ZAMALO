@@ -13,10 +13,11 @@ END ENTITY dff;
 
 ARCHITECTURE arh_dff of dff IS
 BEGIN
-	Q <='0' when clr='1' else 
-	Q <= D when clk'EVENT' and clk='1' ;-- nece ni sa 'EVENT 
+	Q <='0' when clr='1' else D
+	when clk'EVENT and clk='1' ;
 	
 END ARCHITECTURE arh_dff;
+
 _______________________________________________________________________________________
 --testbench.vhd
 
