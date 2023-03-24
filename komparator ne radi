@@ -1,0 +1,59 @@
+Library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+ 
+entity VHDL_Binary_Comparator is
+  port (
+      inp-A,inp-B: in std_logic_vector(3 downto 0);
+      greater, equal, smaller  : out std_logic;
+   );
+end VHDL_Binary_Comparator ;
+ 
+architecture bhv of VHDL_Binary_Comparator is
+begin
+greater <= '1' when (inp-A > inp-B)
+else '0';
+equal <= '1' when (inp-A = inp-B)
+else '0';
+smaller <= '1' when (inp-A < inp-B)
+else '0';
+end architecture bhv;
+___________________________________________________________________________
+--testbench
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity comp_tb is
+end entity comp_tb;
+
+architecture tb of comp_tb is
+	signal inp-A,inp-B: std_logic_vector(3 downto o);
+	signal greater,equal,smaller: std_logic;
+
+begin
+	uut: entity work.VHDL_Binary_Comparator(bhv)
+    PORT MAP(
+    	inp-A => inp-A,
+        inp-B => inp-B,
+         greater =>  greater,
+         equal => equal,
+         smaller => smaller
+         );
+ stimuli: PROCESS
+ BEGIN
+ 	inpA <= "0000";
+    inpB <= "0011";
+    wait for 1 ns;
+    
+    inpA <="0100";
+    inpB <="0100";
+    wait for 1 ns;
+    
+    inpA <="1001";
+    inpB <="0111";
+    wait for 1 ns;
+    
+   end PROCESS stimuli;
+   end ARCHITECTURE tb;
