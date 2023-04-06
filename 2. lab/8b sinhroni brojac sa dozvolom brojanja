@@ -1,0 +1,107 @@
+LIBRARY IEEE;
+  USE IEEE.std_logic_1164.ALL;
+  
+  ENTITY counter8 IS
+      PORT (
+          CLK: IN STD_LOGIC;
+          -- moze da bude i tipa bit, onda nam ne treba ------biblioteka
+          RESET: IN STD_LOGIC;
+          CE, LOAD, DIR: IN STD_LOGIC;
+          DIN: IN INTEGER RANGE 0 TO 255;
+
+          COUNT: OUT INTEGER RANGE 0 TO 255
+      );
+  END counter8;
+ 
+  ARCHITECTURE counter8_arch OF counter8 IS
+  BEGIN
+      PROCESS (CLK, RESET)
+      VARIABLE COUNTER: INTEGER RANGE 0 TO 255;
+      BEGIN
+          IF RESET='1' THEN
+              COUNTER := 0;
+          ELSIF CLK='1' and CLK'event THEN
+              IF LOAD='1' THEN
+                  COUNTER := DIN;
+              ELSE
+                  IF CE='1' THEN
+                      IF DIR='1' THEN
+                          IF COUNTER =255 THEN
+                              COUNTER := 0;
+                          ELSE
+                              COUNTER := COUNTER + 1;
+                          END IF;
+                      ELSE
+                          IF COUNTER =0 THEN
+                              COUNTER := 255;
+                          ELSE
+                              COUNTER := COUNTER - 1;
+                         END IF;
+                     END IF;
+                  END IF;
+              END IF;
+          END IF;
+      COUNT <= COUNTER;
+      END PROCESS;
+  END counter8_arch;
+----------------------------------------------------------------------------
+--testbench
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+
+ENTITY counter8_tb IS
+END counter8_tb;
+
+ARCHITECTURE tb_arch OF counter8_tb IS
+  -- Declare signals for the testbench
+  SIGNAL CLK: STD_LOGIC := '0';
+  SIGNAL RESET: STD_LOGIC := '0';
+  SIGNAL CE: STD_LOGIC := '1';
+  SIGNAL LOAD: STD_LOGIC := '0';
+  SIGNAL DIR: STD_LOGIC := '1';
+  SIGNAL DIN: INTEGER RANGE 0 TO 255 := 42;
+  SIGNAL COUNT: INTEGER RANGE 0 TO 255;
+
+BEGIN
+  -- Instantiate the entity we want to test
+  UUT: ENTITY work.counter8 PORT MAP (
+      CLK => CLK,
+      RESET => RESET,
+      CE => CE,
+      LOAD => LOAD,
+      DIR => DIR,
+      DIN => DIN,
+      COUNT => COUNT
+  );
+
+  -- Generate a clock signal
+  CLK <= NOT CLK AFTER 10 ns;
+
+  -- Stimulate the inputs of the counter8 entity and observe --the outputs
+  PROCESS
+  BEGIN
+    RESET <= '1';
+    CE <= '0';
+    LOAD <= '0';
+    DIR <= '0';
+    WAIT FOR 100 ns;
+    RESET <= '0';
+    CE <= '1';
+    WAIT FOR 200 ns;
+    CE <= '0';
+    WAIT FOR 100 ns;
+    LOAD <= '1';
+    WAIT FOR 100 ns;
+    LOAD <= '0';
+    WAIT FOR 100 ns;
+    DIR <= '1';
+    WAIT FOR 400 ns;
+    DIR <= '0';
+    WAIT FOR 400 ns;
+    CE <= '1';
+    WAIT FOR 400 ns;
+    CE <= '0';
+    WAIT;
+  END PROCESS;
+
+END tb_arch;
