@@ -1,0 +1,89 @@
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+ ENTITY counter IS
+      PORT (  clk, reset: IN bit;
+              count : OUT natural); -- podtip od integer
+  END ENTITY counter;
+ 
+  ARCHITECTURE behavior OF counter IS
+  BEGIN
+
+      incrementer: PROCESS IS
+          VARIABLE count_value : natural:=0;
+          -- zbog inicijalizacije, nije sintetizabilno
+      BEGIN
+          count <= count_value;
+          -- zbog inicijalizacije, inače za sintetizabilnu ---varijantu
+          -- ovo nije potrebno. Realna kola treba da se ------resetuju
+          -- po uključivanju pogodnom vrednošću na reset -----portovima.
+          -- Inače im je nedefinisano stanje.
+          LOOP
+              LOOP
+                  WAIT UNTIL clk = '1' or reset = '1';
+                  EXIT WHEN reset = '1';
+                  count_value := (count_value + 1) mod 16;
+                  count <= count_value;
+              END LOOP;
+              -- ovde dolazi od exit iz l. 23 kad je ---------reset='1'
+              count_value := 0;
+              count <= count_value;
+              WAIT UNTIL reset = '0';
+          END LOOP;
+      END PROCESS incrementer;
+  END ARCHITECTURE behavior;
+  ---------------------------------------------------------------------------------------
+  --testbench
+  
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity counter_tb is
+end entity;
+
+architecture behavior of counter_tb is
+  signal clk   : bit := '0';
+  signal reset : bit:= '0';
+  signal count : natural range 0 to 15;
+
+begin
+  -- Povezivanje brojača sa testbencom
+  counter_inst : entity work.counter
+    port map (
+      clk   => clk,
+      reset => reset,
+      count => count
+    );
+
+  -- Generisanje takta
+  clk_process : process
+  begin
+    clk <= '0';
+    wait for 10 ns;
+    clk <= '1';
+    wait for 10 ns;
+    clk <= '0';
+    wait for 10 ns;
+    clk <= '1';
+    wait for 10 ns;
+    clk <= '0';
+    wait for 10 ns;
+    clk <= '1';
+    wait for 10 ns;
+    clk <= '0';
+    wait;
+  end process;
+
+  -- Resetovanje brojača na početnu vrednost
+  reset_process : process
+  begin
+    reset <= '1';
+    wait for 20 ns;
+    reset <= '0';
+    wait for 20 ns;
+    reset <= '1';
+    wait for 20 ns;
+    reset <= '0';
+    wait;
+  end process;
+end architecture;
