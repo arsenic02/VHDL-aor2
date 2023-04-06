@@ -1,0 +1,111 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity bcd_counter is
+    port (
+        clk : in std_logic;
+        ce  : in std_logic;
+        wr  : in std_logic;
+        din : in unsigned(7 downto 0);
+        q   : out unsigned(9 downto 0)
+    );
+end entity bcd_counter;
+
+architecture behavioral of bcd_counter is
+    signal bcd_q   : unsigned(9 downto 0);
+    signal next_q  : unsigned(9 downto 0);
+    signal enable  : std_logic;
+    signal load_en : std_logic;
+begin
+    -- Dizajn procesa:
+    process(clk, bcd_q, ce, wr, din)
+    begin
+        if rising_edge(clk) then
+            -- Proveri da li treba učitati sledeću vrednost --ili ne:
+            if ce = '1' and wr = '0' then
+                enable <= '0';
+            elsif bcd_q = "0000000000" then
+                enable <= '1';
+            end if;
+
+            -- Proveri da li treba učitati vrednost sa ulaza ili sledeću vrednost brojača:
+            if enable = '1' then
+                if wr = '1' then
+                    next_q <= ('0' & din);
+                    load_en <= '1';
+                else
+                    next_q <= bcd_q - 1;
+                    load_en <= '0';
+                end if;
+            else
+                next_q <= bcd_q;
+                load_en <= '0';
+            end if;
+        end if;
+    end process;
+
+    -- Učitaj sledeću vrednost brojača:
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if load_en = '1' then
+                bcd_q <= next_q;
+            end if;
+        end if;
+    end process;
+
+    -- Izlaz brojača:
+    q <= bcd_q(9 downto 0);--9 downto 2
+end architecture behavioral;
+---------------------------------------------------------------------
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity bcd_counter_tb is
+end entity bcd_counter_tb;
+
+architecture behavioral of bcd_counter_tb is
+    signal clk       : std_logic := '0';
+    signal ce        : std_logic := '0';
+    signal wr        : std_logic := '0';
+    signal din       : unsigned(7 downto 0) := (others => '0');
+    signal q         : unsigned(9 downto 0);
+    signal reset     : std_logic := '1';
+
+begin
+    DUT: entity work.bcd_counter
+        port map (clk => clk, ce => ce, wr => wr, din => din, q => q);
+
+    -- Clock process
+    process
+    begin
+        wait for 10 ns;
+        clk <= not clk;
+    end process;
+
+    -- Stimulus process
+    process
+    begin
+        wait for 20 ns;
+        ce <= '1';
+        wait for 10 ns;
+        ce <= '0';
+        wait for 10 ns;
+        wr <= '1';
+        din <= "00000100";
+        wait for 10 ns;
+        wr <= '0';
+        wait for 10 ns;
+        assert q = "0000010000" report "Error: q = " & integer'image(to_integer(unsigned(q))) severity error;
+        wait for 10 ns;
+        wr <= '1';
+        din <= "00001000";
+        wait for 10 ns;
+        wr <= '0';
+        wait for 10 ns;
+        assert q = "0000001111" report "Error: q = " & integer'image(to_integer(unsigned(q))) severity error;
+        wait;
+    end process;
+end architecture behavioral;
