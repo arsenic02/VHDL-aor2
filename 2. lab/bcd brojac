@@ -1,0 +1,95 @@
+-- design.vhdl
+library IEEE;
+use IEEE.std_logic_1164.all;
+ ENTITY counter_ent IS
+      PORT    (   clr : IN BIT;
+                  clk : IN BIT;
+                  q   : OUT BIT_VECTOR(3 DOWNTO 0)
+              );
+  END ENTITY counter_ent;
+  
+  ARCHITECTURE counter_arch OF counter_ent IS
+  BEGIN
+      PROCESS (clr, clk)
+          VARIABLE q_int : BIT_VECTOR(3 DOWNTO 0);
+          VARIABLE cq : BIT; -- da broji svaki drugi takt
+      BEGIN
+              IF clr='1' THEN
+                q_int := "0000";
+                cq := '0';
+              ELSIF clk'event and clk='1' THEN
+                  cq := not cq;
+                  IF cq='1' THEN
+                      CASE q_int IS
+                          WHEN "0000" => q_int := "0001";
+                          WHEN "0001" => q_int := "0010";
+                          WHEN "0010" => q_int := "0011";
+                          WHEN "0011" => q_int := "0100";
+                          WHEN "0100" => q_int := "0101";
+                          WHEN "0101" => q_int := "0110";
+                          WHEN "0110" => q_int := "0111";
+                          WHEN "0111" => q_int := "1000";
+                          WHEN "1000" => q_int := "1001";
+                          WHEN OTHERS => q_int := "0000";
+                      END CASE;
+                  END IF;
+              END IF;
+      q <= q_int;
+      END PROCESS;
+  END counter_arch
+  ---------------------------------------------------------------
+  --testbendza
+  -- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+ENTITY tb_mux IS
+END tb_mux;
+ 
+ARCHITECTURE behavior OF tb_mux IS
+
+  signal A,B,C,D,S0,S1: STD_LOGIC;
+  SIGNAL Z:STD_LOGIC;
+ 
+BEGIN
+ 
+   uut: entity work.mux_4to1(bhv) 
+   PORT MAP (
+          A => A,
+          B => B,
+          C => C,
+          D => D,
+          S0 => S0,
+          S1 => S1,
+          Z => Z
+        );
+ 
+   stim_proc: process
+   begin
+      
+      wait for 100 ns; 
+ 
+    A <= '1';
+    B <= '0';
+    C <= '1';
+    D <= '0';       
+ 
+    S0 <= '0'; S1 <= '0';
+ 
+      wait for 100 ns; 
+ 
+    S0 <= '1'; S1 <= '0';
+ 
+      wait for 100 ns; 
+ 
+    S0 <= '0'; S1 <= '1';
+ 
+        wait for 100 ns;   
+ 
+    S0 <= '0'; S1 <= '1';  
+ 
+        wait for 100 ns;   
+ 
+    end process;
+ 
+END;
