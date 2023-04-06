@@ -1,0 +1,89 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+ENTITY parallel_to_serial IS
+    GENERIC (n : integer := 8);
+    PORT (
+        wr, clk: IN std_logic;
+        d_in: IN std_logic_vector(n-1 DOWNTO 0);
+        d_out: OUT std_logic
+    );
+END ENTITY parallel_to_serial;
+
+ARCHITECTURE beh OF parallel_to_serial IS
+BEGIN
+    PROCESS IS
+       VARIABLE int_storage: std_logic_vector(n-1 DOWNTO 0);
+    BEGIN
+        WAIT UNTIL wr='1' AND wr'EVENT;
+        -- wait for rising edge of wr signal
+        
+        int_storage:=d_in;
+        FOR i IN n-1 DOWNTO 0 LOOP
+            WAIT UNTIL clk'event and clk='1';
+            d_out<=int_storage(i);
+        END LOOP;
+        
+        WAIT UNTIL clk'event and clk='1'; -- set output to ---HiZ on next rising edge
+        d_out<='Z';
+    END PROCESS;
+END ARCHITECTURE beh;
+---------------------------------------------------------------------------------------------
+testbench.vhd
+library ieee;
+use ieee.std_logic_1164.all;
+
+ENTITY parallel_to_serial_tb  IS
+    GENERIC (width : integer := 8);
+END ENTITY parallel_to_serial_tb;
+
+ARCHITECTURE parallel_to_serial_tb_arch OF parallel_to_serial_tb IS
+    SIGNAL wr    :  std_logic;
+    SIGNAL d_in  :  std_logic_vector (width-1 DOWNTO 0);
+    SIGNAL clk   :  std_logic  := '0';
+    SIGNAL d_out :  std_logic;
+
+BEGIN
+    DUT:
+        ENTITY work.parallel_to_serial(beh)
+            GENERIC MAP (
+                n  => width
+            ) -- GENERIC MAP
+            PORT MAP (
+                wr   => wr,
+                d_in => d_in,
+                clk  => clk,
+                d_out   => d_out
+            ); -- PORT MAP
+
+    clk <= not clk after 50 ns;
+
+    stimuli: process
+    BEGIN
+        d_in <= "0101";
+        wr<='1';
+        WAIT FOR 50 ns;
+        wr<='0';
+        WAIT FOR 600 ns;
+        d_in <= "1101";
+        wr<='1';
+        WAIT FOR 100 ns;
+        wr<='0'; -- de-assert wr after data transfer is 
+        WAIT FOR 500 ns;
+        d_in <= "0000";
+        wr<='1';
+        WAIT FOR 50 ns;
+        wr<='0';
+        WAIT FOR 600 ns;
+        d_in <= "1010";
+        wr<='1';
+        WAIT FOR 100 ns;
+        wr<='0'; -- de-assert wr after data transfer is 
+        WAIT FOR 500 ns;
+        d_in <= "1111";
+        wr<='1';
+        WAIT FOR 50 ns;
+        wr<='0';
+        WAIT FOR 30 ns;
+end process;
+end architecture;
