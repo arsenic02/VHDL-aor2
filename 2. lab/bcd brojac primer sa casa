@@ -40,56 +40,65 @@ use IEEE.std_logic_1164.all;
   ---------------------------------------------------------------
   --testbendza
   -- Code your testbench here
+-- Code your testbench here
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-ENTITY tb_mux IS
-END tb_mux;
- 
-ARCHITECTURE behavior OF tb_mux IS
 
-  signal A,B,C,D,S0,S1: STD_LOGIC;
-  SIGNAL Z:STD_LOGIC;
- 
-BEGIN
- 
-   uut: entity work.mux_4to1(bhv) 
-   PORT MAP (
-          A => A,
-          B => B,
-          C => C,
-          D => D,
-          S0 => S0,
-          S1 => S1,
-          Z => Z
+entity counter_tb is
+end counter_tb;
+
+architecture sim of counter_tb is
+    signal clr_tb : std_logic := '0';
+    signal clk_tb : std_logic := '0';
+    signal q_tb   : std_logic_vector(3 downto 0);
+
+begin
+    uut : entity work.counter_ent
+        port map (
+            clr => clr_tb,
+            clk => clk_tb,
+            q   => q_tb
         );
- 
-   stim_proc: process
-   begin
-      
-      wait for 100 ns; 
- 
-    A <= '1';
-    B <= '0';
-    C <= '1';
-    D <= '0';       
- 
-    S0 <= '0'; S1 <= '0';
- 
-      wait for 100 ns; 
- 
-    S0 <= '1'; S1 <= '0';
- 
-      wait for 100 ns; 
- 
-    S0 <= '0'; S1 <= '1';
- 
-        wait for 100 ns;   
- 
-    S0 <= '0'; S1 <= '1';  
- 
-        wait for 100 ns;   
- 
+
+    stimulus : process
+    begin
+        clr_tb <= '1';
+        clk_tb <= '0';
+        wait for 10 ns;
+
+        clr_tb <= '0';
+        clk_tb <= '1';
+        wait for 10 ns;
+
+        clk_tb <= '0';
+        wait for 10 ns;
+
+        clk_tb <= '1';
+        wait for 10 ns;
+
+        clk_tb <= '0';
+        wait for 10 ns;
+
+        clk_tb <= '1';
+        wait for 10 ns;
+
+        clk_tb <= '0';
+        wait for 10 ns;
+
+        clk_tb <= '1';
+        wait for 10 ns;
+
+        clk_tb <= '0';
+        wait for 10 ns;
+
+        clk_tb <= '1';
+        wait for 10 ns;
+
+        clk_tb <= '0';
+        wait for 10 ns;
+
+        wait;
     end process;
- 
-END;
+
+end sim;
