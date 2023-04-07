@@ -1,0 +1,34 @@
+entity bin2dec is
+  port (
+    bin : in std_logic_vector(3 downto 0); -- ulazni binarni zapis (4-bitni)
+    dec : out std_logic_vector(1 downto 0) -- izlazni decimalni zapis (2-bitni)
+  );
+end entity bin2dec;
+
+architecture Behavioral of bin2dec is
+begin
+
+  process (bin) -- proces se aktivira svaki put kada se promeni ulazni binarni zapis
+  begin
+    case bin is
+      when "0000" => dec <= "00"; -- binarni zapis 0 se konvertuje u decimalni 0
+      when "0001" => dec <= "01"; -- binarni zapis 1 se konvertuje u decimalni 1
+      when "0010" => dec <= "02"; -- binarni zapis 2 se konvertuje u decimalni 2
+      when "0011" => dec <= "03"; -- binarni zapis 3 se konvertuje u decimalni 3
+      when "0100" => dec <= "04"; -- binarni zapis 4 se konvertuje u decimalni 4
+      when "0101" => dec <= "05"; -- binarni zapis 5 se konvertuje u decimalni 5
+      when "0110" => dec <= "06"; -- binarni zapis 6 se konvertuje u decimalni 6
+      when "0111" => dec <= "07"; -- binarni zapis 7 se konvertuje u decimalni 7
+      when "1000" => dec <= "08"; -- binarni zapis 8 se konvertuje u decimalni 8
+      when "1001" => dec <= "09"; -- binarni zapis 9 se konvertuje u decimalni 9
+      when "1010" => dec <= "10"; -- binarni zapis 10 se konvertuje u decimalni 10
+      when "1011" => dec <= "11"; -- binarni zapis 11 se konvertuje u decimalni 11
+      when "1100" => dec <= "12"; -- binarni zapis 12 se konvertuje u decimalni 12
+      when "1101" => dec <= "13"; -- binarni zapis 13 se konvertuje u decimalni 13
+      when "1110" => dec <= "14"; -- binarni zapis 14 se konvertuje u decimalni 14
+      when "1111" => dec <= "15"; -- binarni zapis 15 se konvertuje u decimalni 15
+      when others => dec <= "ZZ"; -- za sve ostale ulaze, izlaz je nepoznat
+    end case;
+  end process;
+
+end architecture Behavioral;
