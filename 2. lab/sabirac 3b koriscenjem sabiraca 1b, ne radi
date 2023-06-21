@@ -1,0 +1,97 @@
+-- Code your design here
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity full_adder is
+	port(a,b,c:in bit;
+    	 s,c_out:out bit);
+end entity full_adder;
+
+architecture truth_table of full_adder is
+begin
+with bit_vector'(a,b,c_in) select
+	(c_out,s) <= bit_vector("00") when "000",
+    			 bit_vector("01") when "001",
+                 bit_vector("01") when "010",
+                 bit_vector("10") when "011",
+                 bit_vector("01") when "100",
+                 bit_vector("10") when "101",
+                 bit_vector("10") when "110",
+                 bit_vector("11") when "111";
+end architecture truth_table;                 
+entity adder3b is
+	port(op1,op2:in bit_vector(2 downto 0);
+    	 cin: in bit;
+         sum:out bit_vector(2 downto 0);
+         cout:out bit);
+end entity adder3b;
+
+architecture struct of adder3b is
+	signal c01,c12:bit;
+begin
+	bit0:entity work.full_adder(truth_table)
+    	port map(a=>op1(0),b>=op2(0),c_in>=cin,
+        s=>sum(0),c_out->c01);
+    bit1:entity work.full_adder(truth_table)
+port map(op1(1),op2(1),c01,sum(1),c12);
+	bit2: entity work.full_adder(truth_table)
+port map(op1(2),op2(2),c12,sum(2),cout);
+end architecture struct;
+____________________________________________________
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity adder3b_tb is
+end entity adder3b_tb;
+
+architecture testbench of adder3b_tb is
+    -- Komponente
+    component adder3b is
+        port (
+            op1, op2: in bit_vector(2 downto 0);
+            cin: in bit;
+            sum: out bit_vector(2 downto 0);
+            cout: out bit
+        );
+    end component adder3b;
+
+    -- Signali
+    signal op1_tb, op2_tb: bit_vector(2 downto 0);
+    signal cin_tb: bit;
+    signal sum_tb: bit_vector(2 downto 0);
+    signal cout_tb: bit;
+
+begin
+    -- Instanciranje sabirača
+    uut: adder3b
+        port map(
+            op1 => op1_tb,
+            op2 => op2_tb,
+            cin => cin_tb,
+            sum => sum_tb,
+            cout => cout_tb
+        );
+
+    -- Generisanje ulaznih signala
+    stimulus: process
+    begin
+        -- Testiranje sabiranja 5 + 3
+        op1_tb <= "101";
+        op2_tb <= "011";
+        cin_tb <= '0';
+
+        -- Pauza pre čitanja rezultata
+        wait for 10 ns;
+
+        -- Testiranje sabiranja 7 + 7
+        op1_tb <= "111";
+        op2_tb <= "111";
+        cin_tb <= '0';
+
+        -- Pauza pre čitanja rezultata
+        wait for 10 ns;
+
+        wait;
+    end process stimulus;
+
+end architecture testbench;
