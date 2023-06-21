@@ -1,0 +1,38 @@
+  LIBRARY  ieee; 
+  USE ieee.std_logic_1164.ALL;
+  
+  ENTITY shift_reg IS
+      GENERIC(n: natural := 4);
+      PORT (  
+              clk: IN std_logic; 
+              serial_data_in: IN std_logic;
+              parallel_data: INOUT std_logic_vector(n-1 DOWNTO 0)
+      ); 
+  END ENTITY shift_reg;
+  ------------------------------------------
+  ------------------------------------------
+  ------------------------------------------
+  ARCHITECTURE cell_level OF shift_reg IS
+  BEGIN
+      
+      reg_array: FOR index IN parallel_data'RANGE GENERATE
+          BEGIN
+              first_cell: IF index= parallel_data'left GENERATE 
+              -- prvi bit treba povezati na serijski ulaz
+                  BEGIN
+                      cell: ENTITY work.D_flipflop(simple)
+                          PORT MAP (clk=>clk, 
+                              d=>serial_data_in,
+                             q=>parallel_data(index));
+                 END GENERATE first_cell;
+              non_first_cell: IF index/= parallel_data'left GENERATE
+                  BEGIN
+                      cell: ENTITY work.D_flipflop(simple)
+                          PORT MAP (clk=>clk,
+                              d=>parallel_data(index+1),
+                              q=>parallel_data(index));
+                  END GENERATE non_first_cell;
+          END GENERATE reg_array;
+  END ARCHITECTURE cell_level;
+  ---------------------------------------------------------
+  --fali testbench
