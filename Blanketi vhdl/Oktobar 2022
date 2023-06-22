@@ -1,0 +1,140 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity Counter is
+    generic (n: integer := 8);
+    port(
+        clk: in std_logic;
+        reset: in std_logic;
+        direction: in std_logic;
+        output: out std_logic_vector(n-1 downto 0)
+    );
+end entity Counter;
+
+architecture arh of Counter is
+    signal count: unsigned(n-1 downto 0);
+begin
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            count <= (others => '0');
+        elsif rising_edge(clk) then
+            if direction = '0' then
+                count <= count + 1;
+            else
+                count <= count - 1;
+            end if;
+        end if;
+    end process;
+    
+    output <= std_logic_vector(count);
+end architecture arh;
+
+
+entity Kolo is
+    generic(n: integer := 8);
+    port(
+        clk: in std_logic;
+        reset: in std_logic;
+        direction: in std_logic;
+        output: out std_logic_vector(n-1 downto 0)
+    );
+end entity Kolo;
+
+architecture arhKolo of Kolo is
+    signal count: unsigned(n-1 downto 0);
+    signal dff_q: std_logic_vector(n/2-1 downto 0);
+begin
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            count <= (others => '0');
+        elsif rising_edge(clk) then
+            if direction = '0' then
+                count <= count + 1;
+            else
+                count <= count - 1;
+            end if;
+        end if;
+    end process;
+    
+    output(0) <= count(0);
+    dff_q(0) <= count(1);
+    
+    for i in 1 to n/2-1 loop
+        dff_q(i) <= count(i+1);
+    end loop;
+    
+    output(1 to n/2) <= dff_q;
+    output(n/2 to n-1) <= std_logic_vector(count(n/2 to n-1));
+end architecture arhKolo;
+-------------------------------------------------------------------
+--testbench
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity Circuit_TB is
+end entity Circuit_TB;
+
+architecture Behavioral of Circuit_TB is
+    constant clk_period : time := 50 ns;
+
+    signal clk       : std_logic := '0';
+    signal reset     : std_logic := '0';
+    signal direction : std_logic := '0';
+    signal output    : std_logic_vector(7 downto 0);
+
+begin
+   
+    uut: entity work.Kolo
+        generic map (
+            n => 8
+        )
+        port map (
+            clk       => clk,
+            reset     => reset,
+            direction => direction,
+            output    => output
+        );
+
+    -- Generate clock signal
+    clk_process: process
+    begin
+        while now < 1000 ns loop  
+            clk <= '0';
+            wait for clk_period/2;
+            clk <= '1';
+            wait for clk_period/2;
+        end loop;
+        wait;
+    end process;
+    
+    stimulus_process: process
+    begin
+        reset <= '1';
+        direction <= '0';
+        wait for 200 ns;
+
+        reset <= '0';
+        wait for 400 ns;
+
+        direction <= '1';
+        wait for 200 ns;
+
+        reset <= '1';
+        wait for 200 ns;
+
+        reset <= '0';
+        wait for 200 ns;
+
+        direction <= '0';
+        wait for 200 ns;
+
+        reset <= '1';
+        wait for 100 ns;
+
+        reset <= '0';
+        wait;
+    end process;
+
+end architecture Behavioral;
