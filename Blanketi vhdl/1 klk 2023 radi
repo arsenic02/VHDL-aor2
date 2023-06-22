@@ -1,0 +1,186 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity BCD_Counter is
+    port (
+        clk, rst, we : in std_logic;
+        d_in : in std_logic_vector(3 downto 0);
+        q_out : out std_logic_vector(3 downto 0)
+    );
+end entity BCD_Counter;
+
+architecture Behavioral of BCD_Counter is
+    signal counter : unsigned(3 downto 0);
+begin
+    process (clk, rst)
+    begin
+        if rst = '1' then
+            counter <= (others => '0');
+        elsif rising_edge(clk) then
+            if we = '1' then
+                counter <= unsigned(d_in);
+            else
+                counter <= counter + 1;
+            end if;
+        end if;
+    end process;
+
+    q_out <= std_logic_vector(counter);
+end architecture Behavioral;
+------------------------------------------
+--testbench.vhd
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity BCD_Counter_TB is
+end entity BCD_Counter_TB;
+
+architecture Behavioral of BCD_Counter_TB is
+    component BCD_Counter is
+        port (
+            clk, rst, we : in std_logic;
+            d_in : in std_logic_vector(3 downto 0);
+            q_out : out std_logic_vector(3 downto 0)
+        );
+    end component BCD_Counter;
+
+    signal clk, rst, we : std_logic;
+    signal d_in, q_out : std_logic_vector(3 downto 0);
+begin
+    dut: BCD_Counter
+        port map (
+            clk => clk,
+            rst => rst,
+            we => we,
+            d_in => d_in,
+            q_out => q_out
+        );
+
+    -- Generisanje takta
+    process
+    begin
+        clk <= '0';
+        wait for 10 ns;
+        clk <= '1';
+        wait for 10 ns;
+    end process;
+
+    -- Testni slučajevi
+    stimulus: process
+    begin
+        -- Test slučaj 1: Reset i čekanje 2 takta
+        rst <= '1';
+        we <= '0';
+        d_in <= "0000";
+        wait for 20 ns;
+
+        -- Test slučaj 2: Reset deaktiviran, upisivanje vrednosti 5, čekanje 4 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "0101";
+        wait for 40 ns;
+
+        -- Test slučaj 3: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 4: Reset deaktiviran, upisivanje vrednosti 9, brojanje 2 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "1001";
+        wait for 20 ns;
+
+        -- Test slučaj 5: Reset deaktiviran, brojanje 3 takta (prelazak preko 9)
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 6: Reset aktiviran, brojanje 2 takta
+        rst <= '1';
+        we <= '0';
+        wait for 20 ns;
+
+        -- Test slučaj 7: Reset deaktiviran, upisivanje vrednosti 6, čekanje 3 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "0110";
+        wait for 30 ns;
+
+        -- Test slučaj 8: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 9: Reset deaktiviran, upisivanje vrednosti 9, brojanje 2 takta (prelazak preko 9)
+        rst <= '0';
+        we <= '1';
+        d_in <= "1001";
+        wait for 20 ns;
+
+        -- Test slučaj 10: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 11: Reset deaktiviran, upisivanje vrednosti 2, čekanje 3 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "0010";
+        wait for 30 ns;
+
+        -- Test slučaj 12: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 13: Reset deaktiviran, upisivanje vrednosti 7, brojanje 2 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "0111";
+        wait for 20 ns;
+
+        -- Test slučaj 14: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 15: Reset deaktiviran, upisivanje vrednosti 3, čekanje 3 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "0011";
+        wait for 30 ns;
+
+        -- Test slučaj 16: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 17: Reset deaktiviran, upisivanje vrednosti 1, brojanje 2 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "0001";
+        wait for 20 ns;
+
+        -- Test slučaj 18: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Test slučaj 19: Reset deaktiviran, upisivanje vrednosti 8, čekanje 3 takta
+        rst <= '0';
+        we <= '1';
+        d_in <= "1000";
+        wait for 30 ns;
+
+        -- Test slučaj 20: Reset deaktiviran, brojanje 3 takta
+        rst <= '0';
+        we <= '0';
+        wait for 30 ns;
+
+        -- Dodajte dodatne test slučajeve po potrebi...
+
+        wait;
+    end process;
+end architecture Behavioral;
