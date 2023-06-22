@@ -5,8 +5,8 @@ use ieee.numeric_std.all;
 entity BCD_Counter is
     port (
         clk, rst, we : in std_logic;
-        d_in : in std_logic_vector(3 downto 0);
-        q_out : out std_logic_vector(3 downto 0)
+        d_in : in std_logic_vector(3 downto 0);--BCD sistem koristi 4 bita za predstavljanje deset decimalnih brojeva (0-9)
+        q_out : out std_logic_vector(3 downto 0)--isto i za q_out --||--
     );
 end entity BCD_Counter;
 
