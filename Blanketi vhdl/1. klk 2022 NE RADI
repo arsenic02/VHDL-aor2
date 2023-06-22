@@ -1,0 +1,121 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity andGate is
+  port(A: in std_logic; B: in std_logic;
+       Y: out std_logic);
+end andGate;
+
+entity xorGate is
+  port(A: in std_logic; B: in std_logic;
+       Y: out std_logic);
+end xorGate;
+
+entity circuit is
+  port(A: in std_logic; B: in std_logic;
+       C: in std_logic; D: in std_logic;
+       Y1: out std_logic; Y2: out std_logic);
+end circuit;
+
+architecture rtl of circuit is
+  component andGate is
+    port(A: in std_logic; B: in std_logic;
+         Y: out std_logic);
+  end component;
+
+  component xorGate is
+    port(A: in std_logic; B: in std_logic;
+         Y: out std_logic);
+  end component;
+
+begin
+  -- Lokalne deklaracije u generate klauzulama
+  gen_and: for i in 0 to 1 generate
+    signal and_out: std_logic;
+  begin
+    and_inst: entity work.andGate
+      port map(A => A, B => B, Y => and_out);
+      
+    -- if-generate klauzula
+    gen_xor: if i = 0 generate
+      signal xor_out: std_logic;
+    begin
+      xor_inst: entity work.xorGate
+        port map(A => C, B => D, Y => xor_out);
+        
+      Y1 <= and_out and xor_out; -- Izlaz kola Y1
+    end generate gen_xor;
+    
+    gen_xnor: if i = 1 generate
+      signal xnor_out: std_logic;
+    begin
+      xnor_inst: entity work.xorGate
+        port map(A => C, B => D, Y => xnor_out);
+        
+      Y2 <= and_out xor xnor_out; -- Izlaz kola Y2
+    end generate gen_xnor;
+  end generate gen_and;
+
+end architecture rtl;
+-------------------------------------------
+--TESTBENCH.VHD
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity testbench is
+end entity testbench;
+
+architecture tb_arch of testbench is
+  signal A, B, C, D, Y1, Y2: std_logic;
+  
+  component circuit is
+    port(A: in std_logic; B: in std_logic;
+         C: in std_logic; D: in std_logic;
+         Y1: out std_logic; Y2: out std_logic);
+  end component;
+
+begin
+  dut: entity work.circuit
+    port map(A => A, B => B, C => C, D => D, Y1 => Y1, Y2 => Y2);
+  
+  -- Generisanje kloka
+  process
+  begin
+    while true loop
+      wait for 5 ns;
+      A <= '0', '1' after 10 ns;
+      B <= '0', '1' after 20 ns;
+      C <= '0', '1' after 15 ns;
+      D <= '0', '1' after 30 ns;
+    end loop;
+  end process;
+
+  -- Provera izlaza kola
+  process
+  begin
+    wait for 50 ns; -- Sačekaj dovoljno dugo da se kolo stabilizuje
+    
+    -- Slučaj 1: A = '0', B = '0', C = '0', D = '0'
+    A <= '0'; B <= '0'; C <= '0'; D <= '0';
+    wait for 10 ns;
+    assert Y1 = '0' report "Y1 izlaz treba biti '0'" severity error;
+    assert Y2 = '0' report "Y2 izlaz treba biti '0'" severity error;
+    
+    -- Slučaj 2: A = '1', B = '1', C = '0', D = '1'
+    A <= '1'; B <= '1'; C <= '0'; D <= '1';
+    wait for 10 ns;
+    assert Y1 = '1' report "Y1 izlaz treba biti '1'" severity error;
+    assert Y2 = '0' report "Y2 izlaz treba biti '0'" severity error;
+    
+    -- Slučaj 3: A = '1', B = '0', C = '1', D = '0'
+    A <= '1'; B <= '0'; C <= '1'; D <= '0';
+    wait for 10 ns;
+    assert Y1 = '0' report "Y1 izlaz treba biti '0'" severity error;
+    assert Y2 = '1' report "Y2 izlaz treba biti '1'" severity error;
+    
+    -- Dodajte dodatne slučajeve testiranja po potrebi
+    
+    wait;
+  end process;
+  
+end architecture tb_arch;
