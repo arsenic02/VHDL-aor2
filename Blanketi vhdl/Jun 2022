@@ -1,0 +1,146 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity Brojac is
+    generic (
+        n : natural := 8
+    );
+    port (
+        CE   : in  std_logic;
+        WR   : in  std_logic;
+        Din  : in  std_logic_vector(n-1 downto 0);
+        SMER : in  std_logic;
+        clk  : in  std_logic;
+        Q    : out std_logic_vector(n-1 downto 0)
+    );
+end Brojac;
+
+architecture Behavioral of Brojac is
+    signal count : unsigned(n-1 downto 0);
+begin
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if CE = '1' then  -- Dozvola brojanja
+                if WR = '0' then  -- Dozvola paralelnog upisa
+                    count <= unsigned(Din);
+                else
+                    if SMER = '0' then  -- Broji naviše
+                        if count = 2*n - 1 then
+                            count <= (others => '0');
+                        else
+                            count <= count + 1;
+                        end if;
+                    else  -- Broji naniže
+                        if count = (others => '0') then
+                            count <= (others => '1');
+                        else
+                            count <= count - 1;
+                        end if;
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
+
+    Q <= std_logic_vector(count);
+end Behavioral;
+--------------------------------------------------------
+--Testbench
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity Brojac_TB is
+end Brojac_TB;
+
+architecture Behavioral of Brojac_TB is
+    constant PERIOD : time := 10 ns;  -- Period takta
+
+    signal CE   : std_logic := '1';
+    signal WR   : std_logic := '1';
+    signal Din  : std_logic_vector(7 downto 0) := (others => '0');
+    signal SMER : std_logic := '0';
+    signal clk  : std_logic := '0';
+    signal Q    : std_logic_vector(7 downto 0);
+
+    -- Generisanje takta
+    signal clk_gen : std_logic := '0';
+    constant HALF_PERIOD : time := PERIOD / 2;
+begin
+    -- Generisanje takta
+    process
+    begin
+        while now < 1000 ns loop
+            clk_gen <= '0';
+            wait for HALF_PERIOD;
+            clk_gen <= '1';
+            wait for HALF_PERIOD;
+        end loop;
+        wait;
+    end process;
+
+    -- Povezivanje Brojac komponente sa testbenčom
+    UUT : entity work.Brojac
+        generic map (
+            n => 8
+        )
+        port map (
+            CE   => CE,
+            WR   => WR,
+            Din  => Din,
+            SMER => SMER,
+            clk  => clk_gen,
+            Q    => Q
+        );
+
+    -- Testiranje
+    process
+    begin
+        -- Inicijalizacija ulaza
+        CE   <= '1';
+        WR   <= '1';
+        Din  <= (others => '0');
+        SMER <= '0';
+        wait for 5 ns;
+
+        -- Testiranje brojanja naviše
+        CE   <= '0';
+        WR   <= '0';
+        Din  <= "00000001";
+        SMER <= '0';
+        wait for PERIOD;
+        
+        CE   <= '0';
+        WR   <= '0';
+        Din  <= "00000100";
+        SMER <= '0';
+        wait for PERIOD;
+       
+        CE   <= '0';
+        WR   <= '0';
+        Din  <= "11111111";
+        SMER <= '0';
+        wait for PERIOD;
+
+        -- Testiranje brojanja naniže
+        CE   <= '0';
+        WR   <= '0';
+        Din  <= "00000001";
+        SMER <= '1';
+        wait for PERIOD;
+
+        CE   <= '0';
+        WR   <= '0';
+        Din  <= "00000100";
+        SMER <= '1';
+        wait for PERIOD;
+
+        CE   <= '0';
+        WR   <= '0';
+        Din  <= "00000000";
+        SMER <= '1';
+        wait for PERIOD;
+
+        wait;
+    end process;
+end Behavioral;
